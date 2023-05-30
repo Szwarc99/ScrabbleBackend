@@ -1,29 +1,11 @@
 import * as fsPromise from 'fs'; 
 
-class Word {
+ interface word {
     word:string;
     used:string;
     notUsed:string;
     needed:string;
-    val:number;
-
-    constructor() {
-        this.word = '';
-        this.used= '';
-        this.notUsed= '';
-        this.needed= '';
-        this.val= 0;
-        }
-
-
-    print(): void {
-        console.log("słowo: " + this.word + " na planszy musisz znaleźć: " + this.needed);
-        console.log("litery użyte: " + this.used + " litery niepotrzebne: " + this.notUsed);
-    }
-    
-        
-        
-    
+    val:number;    
 }
 
 let dictionary: {[letter:string]: number} = 
@@ -56,18 +38,17 @@ export async function findPossibleWords(letters:string)
     const filePath = 'server/slowa.txt';
     
     const fs = require('fs');
-    const dictionary:Array<string> = fs.readFileSync(filePath).toString().split(/\r?\n/);  
+    const dictionary:Array<string> = fs.readFileSync(filePath).toString().split(/\r?\n/);
     
       
     
     
     let alfabet:Array<string> = [ 'a', 'ą', 'b', 'c', 'ć', 'd', 'e', 'ę', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'ł', 'm', 'n', 'ń', 'o', 'ó', 'p', 'r', 's', 'ś', 't', 'u', 'w', 'y', 'z', 'ź', 'ż', '.' ];
-    let list:Array<Word> = [];    
+    let list:Array<word> = [];    
     let count:number = 0;
     
     dictionary.map((w:string) =>
-    {        
-        count++;                
+    {           
         let sortedLetters:string = letters.split('').sort().join('');
         let sortedDicWord:string = w.split('').sort().join('');
         sortedLetters += ".";        
@@ -109,18 +90,21 @@ export async function findPossibleWords(letters:string)
         }
         if (match)
         {
-            let word:Word = new Word();            
+            let word:word = {word:'', used:'', notUsed:'', needed:'', val:0}
             word.word = w;
             word.used = used;
-            if(sortedDicWord.length < sortedLetters.length) {
-                word.notUsed = notUsed + sortedLetters.slice(j);
+            if(sortedDicWord.length < sortedLetters.length) {                
+                word.notUsed = notUsed + sortedLetters.slice(j,-1);                
             }
-            else word.notUsed = notUsed;
+            else { word.notUsed = notUsed; }
             word.needed = needed;
-            word.val = countWordVal(w);
+            word.val = countWordVal(w);            
             list.push(word);
+            count++;
         }
     }) 
-    console.log(count);    
-    return list;
+    
+    console.log('sedning ' + count +' results');
+    
+    return JSON.stringify({words:list})
 }
